@@ -9,6 +9,7 @@ import (
     "log"
     "net/http"
     "net/url"
+    "strconv"
     "strings"
     "time"
     "unicode/utf8"
@@ -83,11 +84,14 @@ func articleStoreHandler(w http.ResponseWriter, r *http.Request) {
         errors["body"] = "内容长度需大于或等于10个字节"
     }
     if len(errors) == 0 {
-        fmt.Fprint(w, "验证通过！<br>")
-        fmt.Fprintf(w, "title的值为：%v <br>", title)
-        fmt.Fprintf(w, "title的长度为: %d <br>", utf8.RuneCountInString(title))
-        fmt.Fprintf(w, "body 的值为：%v <br>", body)
-        fmt.Fprintf(w, "body的长度为：%d <br>", utf8.RuneCountInString(body))
+        lastInsertID, err := saveArticleToDB(title, body)
+        if lastInsertID > 0 {
+            fmt.Fprintf(w, "插入成功,ID为"+strconv.FormatInt(lastInsertID,10))
+        } else {
+            checkError(err)
+            w.WriteHeader(http.StatusInternalServerError)
+            fmt.Fprint(w, "500 服务器内部错误")
+        }
     } else {
         storeURL, _ := router.Get("articles.store").URL()
         data := ArticlesFormData{
@@ -102,6 +106,28 @@ func articleStoreHandler(w http.ResponseWriter, r *http.Request) {
         }
         tmpl.Execute(w, data)
     }
+}
+
+func saveArticleToDB(title string, body string) (int64, error) {
+    var (
+        id int64
+        err error
+        rs sql.Result
+        stmt *sql.Stmt
+    )
+    stmt, err = db.Prepare("INSERT INTO articles (title, body) VALUES(?,?)")
+    if err != nil {
+        return 0, err
+    }
+    defer stmt.Close()
+    rs, err = stmt.Exec(title, body)
+    if err != nil {
+        return 0, err
+    }
+    if id, err = rs.LastInsertId(); id > 0 {
+        return id, nil
+    }
+    return 0, err
 }
 
 func forceHTMLMiddleware(next http.Handler) http.Handler {
@@ -136,8 +162,21 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
     tmpl.Execute(w, data)
 }
 
+func createTables() {
+    createArticlesSQL := `CREATE TABLE IF NOT EXISTS
+articles(
+    id bigint(20) PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    title varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    body longtext COLLATE utf8mb4_unicode_ci
+);
+`
+    _, err := db.Exec(createArticlesSQL)
+    checkError(err)
+}
+
 func main() {
     initDB()
+    createTables()
     router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
     router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
     router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
