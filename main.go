@@ -79,7 +79,7 @@ func (a Article) Delete() (rowsAffected int64, err error) {
     return 0, nil
 }
 func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
-    id := getRouteVariable("id", r)
+    id := route.GetRouteVariable("id", r)
     article, err := getArticleByID(id)
     if err != nil {
         if err == sql.ErrNoRows {
@@ -217,7 +217,7 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesEditHandler(w http.ResponseWriter, r *http.Request) {
-    id := getRouteVariable("id", r)
+    id := route.GetRouteVariable("id", r)
     article,err := getArticleByID(id)
     if err != nil {
         if err == sql.ErrNoRows {
@@ -243,7 +243,7 @@ func articlesEditHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesUpdateHandler(w http.ResponseWriter, r *http.Request){
-     id := getRouteVariable("id", r)
+     id := route.GetRouteVariable("id", r)
      _, err := getArticleByID(id)
      if err != nil {
          if err == sql.ErrNoRows {
@@ -298,7 +298,7 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request){
 }
 
 func articleDeleteHandler(w http.ResponseWriter, r *http.Request){
-    id := getRouteVariable("id", r)
+    id := route.GetRouteVariable("id", r)
     article, err := getArticleByID(id)
     if err != nil {
         if err == sql.ErrNoRows {
@@ -337,11 +337,6 @@ articles(
 `
     _, err := db.Exec(createArticlesSQL)
     checkError(err)
-}
-
-func getRouteVariable(parameterName string, r *http.Request) string {
-    vars := mux.Vars(r)
-    return vars[parameterName]
 }
 
 func getArticleByID(id string) (Article, error) {
