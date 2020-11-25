@@ -3,8 +3,8 @@ package main
 import (
     "database/sql"
     "fmt"
-    "github.com/go-sql-driver/mysql"
     "github.com/gorilla/mux"
+    "goblog/pkg/database"
     "goblog/pkg/logger"
     "goblog/pkg/route"
     "goblog/pkg/types"
@@ -13,30 +13,11 @@ import (
     "net/url"
     "strconv"
     "strings"
-    "time"
     "unicode/utf8"
     //_ "github.com/go-sql-driver/mysql"
 )
 var router *mux.Router
 var db *sql.DB
-func initDB() {
-    var err error
-    config := mysql.Config{
-        User: "homestead",
-        Passwd: "secret",
-        Addr: "127.0.0.1:33060",
-        Net:    "tcp",
-        DBName: "goblog",
-        AllowNativePasswords: true,
-    }
-    db, err = sql.Open("mysql", config.FormatDSN())
-    logger.LogError(err)
-    db.SetMaxOpenConns(25)
-    db.SetMaxIdleConns(25)
-    db.SetConnMaxLifetime(5 * time.Minute)
-    err = db.Ping()
-    logger.LogError(err)
-}
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, "<h1>Hello，欢迎来到 goblog! </h1>")
@@ -323,18 +304,6 @@ func articleDeleteHandler(w http.ResponseWriter, r *http.Request){
     }
 }
 
-func createTables() {
-    createArticlesSQL := `CREATE TABLE IF NOT EXISTS
-articles(
-    id bigint(20) PRIMARY KEY AUTO_INCREMENT NOT NULL,
-    title varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-    body longtext COLLATE utf8mb4_unicode_ci
-);
-`
-    _, err := db.Exec(createArticlesSQL)
-    logger.LogError(err)
-}
-
 func getArticleByID(id string) (Article, error) {
     article := Article{}
     query := "SELECT * FROM articles WHERE id = ?"
@@ -344,8 +313,9 @@ func getArticleByID(id string) (Article, error) {
 
 
 func main() {
-    initDB()
-    createTables()
+    database.Initialize()
+    db = database.DB
+
     route.Initialize()
     router = route.Router
     router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
