@@ -5,6 +5,7 @@ import (
     "fmt"
     "github.com/go-sql-driver/mysql"
     "github.com/gorilla/mux"
+    "goblog/pkg/route"
     "html/template"
     "log"
     "net/http"
@@ -15,7 +16,7 @@ import (
     "unicode/utf8"
     //_ "github.com/go-sql-driver/mysql"
 )
-var router = mux.NewRouter()
+var router *mux.Router
 var db *sql.DB
 func initDB() {
     var err error
@@ -91,7 +92,7 @@ func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
         }
     } else {
         tmpl, err := template.New("show.gohtml").Funcs(template.FuncMap{
-            "RouteName2URL": RouteName2URL,
+            "RouteName2URL": route.Name2URL,
             "Int64ToString": Int64ToString,
         }).ParseFiles("resources/views/articles/show.gohtml")
         checkError(err)
@@ -350,14 +351,6 @@ func getArticleByID(id string) (Article, error) {
     return article, err
 }
 
-func RouteName2URL(routeName string, pairs ...string) string {
-    url, err := router.Get(routeName).URL(pairs...)
-    if err != nil {
-        checkError(err)
-        return ""
-    }
-    return url.String()
-}
 
 func Int64ToString(num int64) string {
     return strconv.FormatInt(num, 10)
@@ -366,6 +359,8 @@ func Int64ToString(num int64) string {
 func main() {
     initDB()
     createTables()
+    route.Initialize()
+    router = route.Router
     router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
     router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
     router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
