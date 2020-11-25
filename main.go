@@ -7,6 +7,7 @@ import (
     "github.com/gorilla/mux"
     "goblog/pkg/logger"
     "goblog/pkg/route"
+    "goblog/pkg/types"
     "html/template"
     "net/http"
     "net/url"
@@ -88,7 +89,7 @@ func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
     } else {
         tmpl, err := template.New("show.gohtml").Funcs(template.FuncMap{
             "RouteName2URL": route.Name2URL,
-            "Int64ToString": Int64ToString,
+            "Int64ToString": types.Int64ToString,
         }).ParseFiles("resources/views/articles/show.gohtml")
         logger.LogError(err)
         tmpl.Execute(w, article)
@@ -341,10 +342,6 @@ func getArticleByID(id string) (Article, error) {
     return article, err
 }
 
-
-func Int64ToString(num int64) string {
-    return strconv.FormatInt(num, 10)
-}
 
 func main() {
     initDB()
