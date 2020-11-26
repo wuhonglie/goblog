@@ -7,7 +7,6 @@ import (
     "goblog/bootstrap"
     "goblog/pkg/database"
     "goblog/pkg/logger"
-    "goblog/pkg/route"
     "html/template"
     "net/http"
     "net/url"
@@ -283,8 +282,9 @@ func main() {
     database.Initialize()
     db = database.DB
 
+    bootstrap.SetupDB()
     router = bootstrap.SetupRoute()
-    router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
+    //router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
     router.HandleFunc("/articles", articlesIndexHandler).Methods("GET").Name("articles.index")
     router.HandleFunc("/articles", articleStoreHandler).Methods("POST").Name("articles.store")
     router.HandleFunc("/articles/create", articlesCreateHandler).Methods("GET").Name("articles.create")
