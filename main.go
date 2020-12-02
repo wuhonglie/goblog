@@ -7,12 +7,9 @@ import (
     "goblog/bootstrap"
     "goblog/pkg/database"
     "goblog/pkg/logger"
-    "html/template"
     "net/http"
-    "net/url"
     "strconv"
     "strings"
-    "unicode/utf8"
     //_ "github.com/go-sql-driver/mysql"
 )
 var router *mux.Router
@@ -34,31 +31,6 @@ func (a Article) Delete() (rowsAffected int64, err error) {
     return 0, nil
 }
 
-func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
-    rows, err := db.Query("SELECT * FROM articles")
-    logger.LogError(err)
-    defer rows.Close()
-    var articles []Article
-    for rows.Next() {
-        var article Article
-        err := rows.Scan(&article.ID, &article.Title, &article.Body)
-        logger.LogError(err)
-        articles = append(articles, article)
-    }
-    err = rows.Err()
-    logger.LogError(err)
-    tmpl, err := template.ParseFiles("resources/views/articles/index.gohtml")
-    logger.LogError(err)
-    tmpl.Execute(w, articles)
-}
-type ArticlesFormData struct {
-    Title, Body string
-    URL *url.URL
-    Errors map[string]string
-}
-
-
-
 func forceHTMLMiddleware(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
         w.Header().Set("Content-Type", "text/html;charset=utf-8")
@@ -76,87 +48,6 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 }
 
 
-
-func articlesEditHandler(w http.ResponseWriter, r *http.Request) {
-    id := getRouteVariable("id", r)
-    article,err := getArticleByID(id)
-    if err != nil {
-        if err == sql.ErrNoRows {
-            w.WriteHeader(http.StatusNotFound)
-            fmt.Fprint(w, "404 文章未找到")
-        } else {
-            logger.LogError(err)
-            w.WriteHeader(http.StatusInternalServerError)
-            fmt.Fprint(w, "500 服务器内部错误")
-        }
-    } else {
-        updateURL, _ := router.Get("articles.update").URL("id", id)
-        data := ArticlesFormData{
-            Title: article.Title,
-            Body: article.Body,
-            URL: updateURL,
-            Errors: nil,
-        }
-        tmpl, err := template.ParseFiles("resources/views/articles/edit.gohtml")
-        logger.LogError(err)
-        tmpl.Execute(w, data)
-    }
-}
-
-func articlesUpdateHandler(w http.ResponseWriter, r *http.Request){
-     id := getRouteVariable("id", r)
-     _, err := getArticleByID(id)
-     if err != nil {
-         if err == sql.ErrNoRows {
-             w.WriteHeader(http.StatusNotFound)
-             fmt.Fprint(w, "404 文章未找到")
-         }else{
-             logger.LogError(err)
-             w.WriteHeader(http.StatusInternalServerError)
-             fmt.Fprint(w, "500 服务器内部错误")
-         }
-     }else{
-         title := r.PostFormValue("title")
-         body := r.PostFormValue("body")
-         errors := make(map[string]string)
-         if title == "" {
-             errors["title"] = "标题不能为空"
-         } else if utf8.RuneCountInString(title) < 3 || utf8.RuneCountInString(title) > 40 {
-             errors["title"] = "标题长度需介于3-40"
-         }
-         if body == "" {
-             errors["body"] = "内容不能为空"
-         }else if utf8.RuneCountInString(body) < 10 {
-             errors["body"] = "内容长度需大于或等于10个字符"
-         }
-         if len(errors) == 0 {
-             query := "UPDATE articles SET title = ?, body = ? WHERE id = ?"
-             rs, err := db.Exec(query, title, body, id)
-             if err != nil {
-                 logger.LogError(err)
-                 w.WriteHeader(http.StatusInternalServerError)
-                 fmt.Fprint(w, "500 服务器内部错误")
-             }
-             if n, _ := rs.RowsAffected(); n > 0 {
-                 showURL, _ := router.Get("articles.show").URL("id",id)
-                 http.Redirect(w, r, showURL.String(),http.StatusFound)
-             } else{
-                 fmt.Fprint(w, "您没有做任何更改")
-             }
-         } else {
-             updateURL,_ := router.Get("articles.edit").URL("id",id)
-             data := ArticlesFormData{
-                 Title: title,
-                 Body: body,
-                 URL: updateURL,
-                 Errors: errors,
-             }
-             tmpl, err := template.ParseFiles("resources/views/articles/edit.gohtml")
-             logger.LogError(err)
-             tmpl.Execute(w,data)
-         }
-     }
-}
 
 func articleDeleteHandler(w http.ResponseWriter, r *http.Request){
     id := getRouteVariable("id", r)
@@ -205,8 +96,8 @@ func main() {
 
     bootstrap.SetupDB()
     router = bootstrap.SetupRoute()
-    router.HandleFunc("/articles/{id:[0-9]+}/edit", articlesEditHandler).Methods("GET").Name("articles.edit")
-    router.HandleFunc("/articles/{id:[0-9]+}", articlesUpdateHandler).Methods("POST").Name("articles.update")
+    //router.HandleFunc("/articles/{id:[0-9]+}/edit", articlesEditHandler).Methods("GET").Name("articles.edit")
+    //router.HandleFunc("/articles/{id:[0-9]+}", articlesUpdateHandler).Methods("POST").Name("articles.update")
     router.HandleFunc("/articles/{id:[0-9]+}/delete", articleDeleteHandler).Methods("POST").Name("article.delete")
     router.Use(forceHTMLMiddleware)
     http.ListenAndServe(":3000",  removeTrailingSlash(router))
