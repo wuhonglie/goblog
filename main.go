@@ -3,8 +3,8 @@ package main
 import (
     "database/sql"
     "github.com/gorilla/mux"
+    "goblog/app/http/middlewares"
     "goblog/bootstrap"
-    "goblog/pkg/database"
     "net/http"
     "strings"
     //_ "github.com/go-sql-driver/mysql"
@@ -35,12 +35,12 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 
 
 func main() {
-    database.Initialize()
-    db = database.DB
+    //database.Initialize()
+    //db = database.DB
 
     bootstrap.SetupDB()
     router = bootstrap.SetupRoute()
     //router.HandleFunc("/articles/{id:[0-9]+}/delete", articleDeleteHandler).Methods("POST").Name("article.delete")
-    router.Use(forceHTMLMiddleware)
-    http.ListenAndServe(":3000",  removeTrailingSlash(router))
+    //router.Use(forceHTMLMiddleware)
+    http.ListenAndServe(":3000",  middlewares.RemoveTrailingSlash(router))
 }
