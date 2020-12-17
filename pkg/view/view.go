@@ -9,15 +9,17 @@ import (
     "strings"
 )
 
-func Render(w io.Writer, name string, data interface{}) {
+func Render(w io.Writer, data interface{}, tplFiles ...string) {
     viewDir := "resources/views/"
-    name = strings.Replace(name, ".", "/", -1)
-    files, err := filepath.Glob(viewDir + "layouts/*.gohtml")
+    for i, f := range tplFiles {
+        tplFiles[i] = viewDir + strings.Replace(f, ".", "/", -1) + ".gohtml"
+    }
+    layoutFiles, err := filepath.Glob(viewDir + "layouts/*.gohtml")
     logger.LogError(err)
-    newFiles := append(files, viewDir + name + ".gohtml")
-    tmpl, err := template.New(name + ".gohtml").Funcs(template.FuncMap{
+    allFiles := append(layoutFiles, tplFiles...)
+    tmpl, err := template.New("").Funcs(template.FuncMap{
         "RouteName2URL": route.Name2URL,
-    }).ParseFiles(newFiles...)
+    }).ParseFiles(allFiles...)
     logger.LogError(err)
     tmpl.ExecuteTemplate(w, "app", data)
 }
