@@ -1,14 +1,12 @@
 package requests
 
 import (
-    "fmt"
     "github.com/thedevsaddam/govalidator"
     "goblog/app/models/user"
 )
 
 func ValidateRegistrationForm(data user.User) map[string][]string {
     // 1.定制规则
-    fmt.Println(data)
     rules := govalidator.MapData{
         "name": []string{
             "required",

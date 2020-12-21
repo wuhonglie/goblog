@@ -1,7 +1,6 @@
 package view
 
 import (
-    "fmt"
     "goblog/pkg/logger"
     "goblog/pkg/route"
     "html/template"
@@ -31,5 +30,4 @@ func RenderTemplate(w io.Writer, name string, data interface{}, tplFiles ...stri
         "RouteName2URL" : route.Name2URL,
     }).ParseFiles(allFiles...)
     err = tmpl.ExecuteTemplate(w, name, data)
-    fmt.Println(err)
 }
