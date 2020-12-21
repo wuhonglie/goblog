@@ -19,6 +19,7 @@ func RenderSimple(w io.Writer, data interface{}, tplFiles ...string) {
 }
 
 func RenderTemplate(w io.Writer, name string, data interface{}, tplFiles ...string) {
+
     viewDir := "resources/views/"
     for i,f := range tplFiles {
         tplFiles[i] = viewDir + strings.Replace(f, ".", "/", -1) + ".gohtml"
