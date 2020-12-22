@@ -3,6 +3,7 @@ package routes
 import (
     "github.com/gorilla/mux"
     "goblog/app/http/controllers"
+    "goblog/app/http/middlewares"
     "net/http"
 )
 
@@ -13,6 +14,7 @@ func RegisterWebRoutes(r *mux.Router) {
     r.PathPrefix("/js/").Handler(http.FileServer(http.Dir("./public")))
     // 中间件
     //r.Use(middlewares.ForceHTML)
+    r.Use(middlewares.StartSession)
     r.HandleFunc("/", pc.Home).Methods("GET").Name("home")
     r.HandleFunc("/about", pc.About).Methods("GET").Name("about")
     r.NotFoundHandler = http.HandlerFunc(pc.NotFound)

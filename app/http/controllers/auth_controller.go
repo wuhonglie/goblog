@@ -4,6 +4,7 @@ import (
     "fmt"
     "goblog/app/models/user"
     "goblog/app/requests"
+    "goblog/pkg/session"
     "goblog/pkg/view"
     "net/http"
 )
@@ -45,6 +46,8 @@ func (*AuthController) DoRegister(w http.ResponseWriter, r *http.Request){
 }
 
 func (*AuthController) Login(w http.ResponseWriter, r *http.Request) {
+    session.Flush()
+    //fmt.Fprint(w, session.Get("uid"))
     view.RenderSimple(w, view.D{}, "auth.login")
 }
 
