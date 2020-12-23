@@ -36,6 +36,7 @@ func (*AuthController) DoRegister(w http.ResponseWriter, r *http.Request){
         }, "auth.register")
     }else{
         // 4.验证成功，创建数据
+        fmt.Println(_user)
         _user.Create()
         if _user.ID >0 {
             // 登录用户并跳转到首页

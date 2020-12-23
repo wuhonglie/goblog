@@ -1,12 +1,14 @@
 package user
 
 import (
+    "fmt"
     "goblog/pkg/logger"
     "goblog/pkg/model"
     "goblog/pkg/types"
 )
 
 func (user *User) Create() (err error) {
+    fmt.Println(user)
     if err = model.DB.Create(&user).Error; err != nil {
         logger.LogError(err)
         return err
