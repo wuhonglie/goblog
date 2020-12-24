@@ -13,9 +13,6 @@
       {{ $article.Body }}
     </div>  <!-- /.blog-post -->
   {{end}}
-  <nav class="blog-pagination mb-5">
-    <a href="#" class="btn btn-outline-primary">下一页</a>
-    <a href="#" class="btn btn-outline-secondary disabled">上一页</a>
-  </nav>
+  {{template "pagination" .PagerData}}
 </div><!-- /.blog-main -->
 {{end}}
