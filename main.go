@@ -5,6 +5,8 @@ import (
     "github.com/gorilla/mux"
     "goblog/app/http/middlewares"
     "goblog/bootstrap"
+    _config "goblog/config"
+    "goblog/pkg/config"
     "net/http"
     "strings"
     //_ "github.com/go-sql-driver/mysql"
@@ -31,7 +33,9 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 }
 
 
-
+func init(){
+    _config.Initialize()
+}
 
 
 func main() {
@@ -42,5 +46,5 @@ func main() {
     router = bootstrap.SetupRoute()
     //router.HandleFunc("/articles/{id:[0-9]+}/delete", articleDeleteHandler).Methods("POST").Name("article.delete")
     //router.Use(forceHTMLMiddleware)
-    http.ListenAndServe(":3000",  middlewares.RemoveTrailingSlash(router))
+    http.ListenAndServe(":"+config.GetString("app.port"),  middlewares.RemoveTrailingSlash(router))
 }
