@@ -7,14 +7,16 @@
   <div class="blog-post bg-white p-5 rounded shadow mb-4">
     <h3 class="blog-post-title">{{ .Article.Title }}</h3>
     {{template "article-meta" .Article}}
-                                                                                                          class="font-weight-bold">Summer</a></p>
+
     <hr>
     {{ .Article.Body }}
     {{/* 构建删除按钮 */}}
+    {{ if .CanModifyArticle }}
     <form action="{{ RouteName2URL "articles.delete" "id" .Article.GetStringID }}" method="post" class="mt-4">
       <button class="btn btn-outline-danger btn-sm" type="submit" onclick="return confirm('删除动作不可逆，请确定是否继续')">删除</button>
       <a href="{{ RouteName2URL "articles.edit" "id" .Article.GetStringID}}" class="btn btn-outline-secondary btn-sm">编辑</a>
     </form>
+    {{end}}
   </div><!-- /.blog-post -->
 </div>
 {{end}}
