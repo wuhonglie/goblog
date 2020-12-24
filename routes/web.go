@@ -29,6 +29,8 @@ func RegisterWebRoutes(r *mux.Router) {
     r.HandleFunc("/articles/{id:[0-9]+}/delete", middlewares.Auth(ac.Delete)).Methods("POST").Name("articles.delete")
 
     // 用户认证
+    uc := new(controllers.UserController)
+    r.HandleFunc("/users/{id:[0-9]+}",uc.Show).Methods("GET").Name("users.show")
     auc := new(controllers.AuthController)
     r.HandleFunc("/auth/login", middlewares.Guest(auc.Login)).Methods("GET").Name("auth.login")
     r.HandleFunc("/auth/dologin", middlewares.Guest(auc.DoLogin)).Methods("POST").Name("auth.dologin")
