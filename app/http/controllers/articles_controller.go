@@ -4,7 +4,6 @@ import (
     "fmt"
     article2 "goblog/app/models/article"
     "goblog/app/requests"
-    "goblog/pkg/config"
     "goblog/pkg/logger"
     "goblog/pkg/route"
     "goblog/pkg/view"
@@ -45,7 +44,6 @@ func (*ArticlesController) Show(w http.ResponseWriter, r *http.Request){
 }
 // Index 文章列表页
 func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprint(w,config.Env("app.name"))
     articles, err := article2.GetAll()
     //fmt.Println("文章数据：",articles)
     if err != nil {
