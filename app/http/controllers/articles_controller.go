@@ -5,6 +5,7 @@ import (
     article2 "goblog/app/models/article"
     "goblog/app/policies"
     "goblog/app/requests"
+    "goblog/pkg/auth"
     "goblog/pkg/route"
     "goblog/pkg/view"
     "net/http"
@@ -69,9 +70,11 @@ func (*ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
     //title := r.PostFormValue("title")
     //body := r.PostFormValue("body")
     // 1.初始化数据
+    currentUser := auth.User()
     _article := article2.Article{
         Title: r.PostFormValue("title"),
         Body:  r.PostFormValue("body"),
+        UserID: currentUser.ID,
     }
     errors := requests.ValidateArticleForm(_article)
     if len(errors) == 0 {
